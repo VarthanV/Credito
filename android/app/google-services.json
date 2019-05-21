@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "320217328921",
+    "firebase_url": "https://credito-7c534.firebaseio.com",
+    "project_id": "credito-7c534",
+    "storage_bucket": "credito-7c534.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:320217328921:android:76f78fe097252c3c",
+        "android_client_info": {
+          "package_name": "com.example.credito"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "320217328921-hqavp5qf5019itt0ffpng4ogsag9igb8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDJU_WJqsrAtqzZBFsnOGv_VEBAve6TUlw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "320217328921-hqavp5qf5019itt0ffpng4ogsag9igb8.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
