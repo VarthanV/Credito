@@ -5,6 +5,7 @@ import 'package:flutter/rendering.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'HomePage.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'RegisterPage.dart';
 
 class LoginPage extends StatefulWidget {
@@ -19,6 +20,8 @@ class _LoginPageState extends State<LoginPage> {
   var _passwordController = new TextEditingController();
   bool isLoading = false;
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
+@override
+
 
   Future<String> signIn(String email, String password) async {
     FirebaseUser user = await _firebaseAuth.signInWithEmailAndPassword(
@@ -52,6 +55,11 @@ class _LoginPageState extends State<LoginPage> {
       SharedPreferences.getInstance().then((prefs) {
         prefs.setString('cookie', user.uid);
         prefs.setString('email', user.email);
+      Firestore.instance.collection('profile').where('email',isEqualTo: user.email).snapshots().listen((data){
+        var id=data.documents[0]['id'];
+        prefs.setString('id', id);
+
+      });
       });
       setState(() {
         Navigator.pushReplacement(context,
