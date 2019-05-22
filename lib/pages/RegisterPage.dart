@@ -29,9 +29,11 @@ class _RegisterPageState extends State<RegisterPage> {
         user.sendEmailVerification();
         var profile = db.collection('profile');
         profile.add({
+          "id":"",
           "name": _nameController.text,
           "email": _emailController.text
         }).then((doc) {
+          doc.updateData({'id':doc.documentID});
           SharedPreferences.getInstance().then((prefs) {
             prefs.setString('id', doc.documentID);
           });
