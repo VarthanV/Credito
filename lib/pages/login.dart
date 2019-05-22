@@ -5,6 +5,7 @@ import 'package:flutter/rendering.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'HomePage.dart';
+import 'RegisterPage.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -24,8 +25,33 @@ class _LoginPageState extends State<LoginPage> {
         email: email, password: password);
     print(user.uid);
     if (user.uid != null || user.uid != '') {
-      SharedPreferences.getInstance().then((prefs){
+      if (!user.isEmailVerified) {
+        setState(() {
+          showDialog(
+              context: context,
+              child: AlertDialog(
+                title: Text(
+                  "Email Verification",
+                  style: TextStyle(fontFamily: 'OpenSans'),
+                ),
+                content: Text("Please Verify Your Email to continue"),
+                actions: <Widget>[
+                  FlatButton(
+                    child: Text(
+                      "OK",
+                      style: TextStyle(fontFamily: "OpenSans"),
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  )
+                ],
+              ));
+        });
+      }
+      SharedPreferences.getInstance().then((prefs) {
         prefs.setString('cookie', user.uid);
+        prefs.setString('email', user.email);
       });
       setState(() {
         Navigator.pushReplacement(context,
@@ -114,7 +140,24 @@ class _LoginPageState extends State<LoginPage> {
                     : Container(
                         margin: EdgeInsets.only(top: 20.0),
                         alignment: Alignment.center,
-                        child: CircularProgressIndicator())
+                        child: CircularProgressIndicator()),
+                Container(
+                  padding: EdgeInsets.only(top: 10.0, left: 10.0, right: 10.0),
+                  margin: EdgeInsets.only(top: 6.0),
+                  child: FlatButton(
+                    child: Text(
+                      "REGISTER",
+                      style: TextStyle(fontFamily: "OpenSans"),
+                    ),
+                    onPressed: () {
+                      Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                              builder: (BuildContext context) =>
+                                  RegisterPage()));
+                    },
+                  ),
+                )
               ],
             ),
           )
