@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class CardDetailPage extends StatefulWidget {
-  var id;
+  final id;
   CardDetailPage(this.id);
   @override
   _CardDetailPageState createState() => _CardDetailPageState();
 }
 
 class _CardDetailPageState extends State<CardDetailPage> {
-  var expenses=[];
+  var expenses = [];
+  int expense;
 //Controller
   var _expenseController = new TextEditingController();
   var _formKey = new GlobalKey<FormState>();
@@ -24,8 +27,133 @@ class _CardDetailPageState extends State<CardDetailPage> {
     super.initState();
     getCard();
   }
-  Widget expenseCard(List expenses){
 
+  Widget expenseCard(List expenses) {
+    return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: expenses.map((item) {
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Card(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Container(
+                      alignment: Alignment.topLeft,
+                      padding: EdgeInsets.only(top: 6.0, left: 6.0, right: 6.0),
+                      margin: EdgeInsets.only(top: 6.0, left: 10.0),
+                      child: Text(
+                        "Title :" +
+                        item['title'.toString()].toString(),
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontFamily: "OpenSans",
+                            fontSize: 20.0,
+                           ),
+                      ),
+                    ),
+                      Container(
+                      alignment: Alignment.topLeft,
+                      padding: EdgeInsets.only(top: 6.0, left: 6.0, right: 6.0),
+                      margin: EdgeInsets.only(top: 6.0, left: 10.0),
+                      child: Text(
+                            item['content'].toString(),
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontFamily: "OpenSans",
+                            fontSize: 20.0,
+                            ),
+                      ),
+                    ),
+                      Container(
+                      alignment: Alignment.topLeft,
+                      padding: EdgeInsets.only(top: 6.0, left: 6.0, right: 6.0),
+                      margin: EdgeInsets.only(top: 6.0, left: 10.0),
+                      child: Text(
+                          "Amount Spent  : " +
+                            card['currency'] +      item['amountSpent'].toString(),
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontFamily: "OpenSans",
+                            fontSize: 20.0,
+                            ),
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            ],
+          );
+        }).toList());
+  }
+
+  postExpense() {
+    var expense;
+    setState(() {
+      if (int.parse(_expenseController.text) <
+          int.parse(card['availableBalance'])) {
+        expense = {
+          "id": "",
+          "title": _titleController.text,
+          "content": _contentController.text,
+          "amountSpent": _expenseController.text
+        };
+
+        setState(() {
+          //expenses.add(expense);
+          var tempbal = int.parse(card['availableBalance']) -
+              int.parse(_expenseController.text);
+          expense = tempbal;
+        });
+      } else {
+        setState(() {
+          showDialog(
+              context: context,
+              child: AlertDialog(
+                title:
+                    Text("Warning", style: TextStyle(fontFamily: "OpenSans")),
+                content: Text(
+                  "You have Insufficient Balance",
+                  style: TextStyle(fontFamily: "OpenSans"),
+                ),
+                actions: <Widget>[
+                  FlatButton(
+                    child: Text("Ok", style: TextStyle(fontFamily: "OpenSans")),
+                    onPressed: () {
+                      setState(() {
+                        Navigator.of(context).pop();
+                      });
+                    },
+                  )
+                ],
+              ));
+        });
+      }
+    });
+
+    SharedPreferences.getInstance().then((prefs) {
+      Firestore.instance
+          .collection('profile')
+          .document(prefs.getString('id'))
+          .collection('Cards')
+          .document(widget.id)
+          .updateData({"availableBalance": expense.toString()});
+      Firestore.instance
+          .collection('profile')
+          .document(prefs.getString('id'))
+          .collection('Cards')
+          .document(widget.id)
+          .collection('Expenses')
+          .add({
+        "id": "",
+        "title": _titleController.text,
+        "content": _contentController.text,
+        "amountSpent": _expenseController.text
+      }).then((doc) {
+        doc.updateData({"id": doc.documentID});
+      });
+    });
   }
 
   getCard() {
@@ -45,7 +173,20 @@ class _CardDetailPageState extends State<CardDetailPage> {
           card['balance'] = data.data['balance'];
           card['currency'] = data.data['currency'];
           card['availableBalance'] = data.data['availableBalance'];
+          expense = int.parse(data.data['availableBalance']);
           card['expiryDate'] = data.data['expiryDate'];
+          Firestore.instance
+              .collection('profile')
+              .document(prefs.getString('id'))
+              .collection('Cards')
+              .document(widget.id)
+              .collection("Expenses")
+              .snapshots()
+              .listen((data) {
+            setState(() {
+              expenses = data.documents;
+            });
+          });
           isLoading = false;
         });
       });
@@ -138,20 +279,23 @@ class _CardDetailPageState extends State<CardDetailPage> {
                                 style: TextStyle(fontFamily: "OpenSans"),
                               ),
                             ),
-                             Container(
-                                alignment: Alignment.topCenter,
-                              
-                                padding: EdgeInsets.only(
-                                    top: 6.0, left: 6.0, right: 6.0),
-                                margin: EdgeInsets.only(top: 6.0),
-                                child: FlatButton(
-                                   child: Text("ADD",style: TextStyle(fontFamily: "OpenSans"),),
-                                   onPressed: (){
-                                     
-                                   },
+                            Container(
+                              alignment: Alignment.topCenter,
+                              padding: EdgeInsets.only(
+                                  top: 6.0, left: 6.0, right: 6.0),
+                              margin: EdgeInsets.only(top: 6.0),
+                              child: FlatButton(
+                                child: Text(
+                                  "ADD",
+                                  style: TextStyle(fontFamily: "OpenSans"),
                                 ),
-
-                              )
+                                onPressed: () {
+                                  if (_formKey.currentState.validate()) {
+                                    postExpense();
+                                  }
+                                },
+                              ),
+                            )
                           ],
                         ),
                       ),
@@ -160,96 +304,62 @@ class _CardDetailPageState extends State<CardDetailPage> {
             });
           },
         ),
-        body: RefreshIndicator(
-            onRefresh: refresh,
-            child: !isLoading
-                ? Container(
-                    padding: EdgeInsets.only(top: 6.0, left: 6.0, right: 6.0),
-                    margin: EdgeInsets.only(top: 20.0),
-                    child: ListView(
-                      children: <Widget>[
-                        Card(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: <Widget>[
-                              Container(
-                                alignment: Alignment.topLeft,
-                                padding: EdgeInsets.only(
-                                    top: 6.0, left: 6.0, right: 6.0),
-                                margin: EdgeInsets.only(top: 6.0),
-                                child: Text(
-                                  "Card Number " +
-                                      card['cardNumber'].toString(),
-                                  style: TextStyle(
-                                      fontFamily: "Opensans", fontSize: 20.0),
-                                ),
-                              ),
-                              Container(
-                                alignment: Alignment.topLeft,
-                                padding: EdgeInsets.only(
-                                    top: 6.0, left: 6.0, right: 6.0),
-                                margin: EdgeInsets.only(top: 6.0),
-                                child: Text(
-                                  "TotalBalance  " +
-                                      card['currency'] +
-                                      ' ' +
-                                      card['balance'].toString(),
-                                  style: TextStyle(
-                                      fontFamily: "Opensans", fontSize: 20.0),
-                                ),
-                              ),
-                              Container(
-                                alignment: Alignment.topLeft,
-                                padding: EdgeInsets.only(
-                                    top: 6.0, left: 6.0, right: 6.0),
-                                margin: EdgeInsets.only(top: 6.0),
-                                child: Text(
-                                  "AvailableBalance  " +
-                                      card['currency'] +
-                                      ' ' +
-                                      card['availableBalance'].toString(),
-                                  style: TextStyle(
-                                      fontFamily: "Opensans", fontSize: 20.0),
-                                ),
-                              ),
-                              Container(
-                                alignment: Alignment.topLeft,
-                                padding: EdgeInsets.only(
-                                    top: 6.0, left: 6.0, right: 6.0),
-                                margin: EdgeInsets.only(top: 6.0),
-                                child: Text(
-                                  "Valid Upto  " +
-                                      card['expiryDate'].toString(),
-                                  style: TextStyle(
-                                      fontFamily: "Opensans", fontSize: 20.0),
-                                ),
-                              ),
-                             
-                            ],
-                          ),
-                        ),
-                        
-                        Divider(
-                          color: Colors.white70,
-                        ),
+        body: Column(
+    mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Column(
+              children: <Widget>[
 
-                        Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: <Widget>[
-                            expenses.length != 0 ?  
-                            ListView.builder(
-                              itemCount: expenses.length,
-                              itemBuilder: (BuildContext context,int i){
-                                return expenseCard(expenses[i]);
-                              },
-                            ):Container()
+                Container(
+                
+                    margin: EdgeInsets.only(top: 3.0,left:2.0),
 
-                          ]
-      
-                        )
-                      ],
-                    ),
-                  )
-                : Center(child: CircularProgressIndicator())));
+                  child:Card(
+                child: Column(
+                  children: <Widget>[
+                     
+                  Container(
+                     padding: EdgeInsets.only(
+                                  top: 6.0, left: 6.0, right: 6.0),
+                
+                    margin: EdgeInsets.only(top: 3.0,left:2.0),
+
+                  child:Card(
+                child: Text("Total Balance : "+ card['balance'].toString(),style: TextStyle(fontFamily: "OpenSans",fontSize: 30.0), ),
+              ) ,
+                ),
+              
+                
+                   Container(
+                     padding: EdgeInsets.only(
+                                  top: 6.0, left: 6.0, right: 6.0),
+                
+                    margin: EdgeInsets.only(top: 3.0,left:2.0),
+
+                  child:Card(
+                child: Text("Available Balance : "+ expense.toString(),style: TextStyle(fontFamily: "OpenSans",fontSize: 30.0), ),
+              ) ,
+                ),
+                    
+                  ],
+                ))),
+                
+                
+               
+                Divider
+                (color: Colors.white70
+                ,),
+                expenses.length !=0 ? expenseCard(expenses)
+                :Center(child: Text("No Expenses Found",style: TextStyle(fontFamily: "OpenSans",),))
+              
+              ],
+            )
+
+          ],
+        ),
+        
+
+
+    );
   }
 }
