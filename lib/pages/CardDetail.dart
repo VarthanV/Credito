@@ -91,6 +91,7 @@ class _CardDetailPageState extends State<CardDetailPage> {
   postExpense() {
     var expense;
     setState(() {
+      Navigator.of(context).pop();
       if (int.parse(_expenseController.text) <
           int.parse(card['availableBalance'])) {
         expense = {
@@ -105,6 +106,7 @@ class _CardDetailPageState extends State<CardDetailPage> {
           var tempbal = int.parse(card['availableBalance']) -
               int.parse(_expenseController.text);
           expense = tempbal;
+
         });
       } else {
         setState(() {
@@ -152,6 +154,11 @@ class _CardDetailPageState extends State<CardDetailPage> {
         "amountSpent": _expenseController.text
       }).then((doc) {
         doc.updateData({"id": doc.documentID});
+        setState(() {
+          _expenseController .text ='';
+          _contentController.text='';
+           _titleController.text='';
+        });
       });
     });
   }
