@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'HomePage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class CardDetailPage extends StatefulWidget {
@@ -14,6 +15,7 @@ class CardDetailPage extends StatefulWidget {
 class _CardDetailPageState extends State<CardDetailPage> {
   var expenses = [];
   int expense;
+
 //Controller
   var _expenseController = new TextEditingController();
   var _formKey = new GlobalKey<FormState>();
@@ -44,40 +46,41 @@ class _CardDetailPageState extends State<CardDetailPage> {
                       padding: EdgeInsets.only(top: 6.0, left: 6.0, right: 6.0),
                       margin: EdgeInsets.only(top: 6.0, left: 10.0),
                       child: Text(
-                        "Title :" +
-                        item['title'.toString()].toString(),
+                        "Title :" + item['title'.toString()].toString(),
                         style: TextStyle(
-                            color: Colors.white,
-                            fontFamily: "OpenSans",
-                            fontSize: 20.0,
-                           ),
+                          color: Colors.white,
+                          fontFamily: "OpenSans",
+                          fontSize: 20.0,
+                        ),
                       ),
                     ),
-                      Container(
+                    Container(
                       alignment: Alignment.topLeft,
                       padding: EdgeInsets.only(top: 6.0, left: 6.0, right: 6.0),
                       margin: EdgeInsets.only(top: 6.0, left: 10.0),
                       child: Text(
-                            item['content'].toString(),
+                        item['content'].toString(),
                         style: TextStyle(
-                            color: Colors.white,
-                            fontFamily: "OpenSans",
-                            fontSize: 20.0,
-                            ),
+                          color: Colors.white,
+                          fontFamily: "OpenSans",
+                          fontSize: 20.0,
+                        ),
                       ),
                     ),
-                      Container(
+                    Container(
                       alignment: Alignment.topLeft,
                       padding: EdgeInsets.only(top: 6.0, left: 6.0, right: 6.0),
                       margin: EdgeInsets.only(top: 6.0, left: 10.0),
                       child: Text(
-                          "Amount Spent  : " +
-                            card['currency'] +      item['amountSpent'].toString(),
+                        "Amount Spent  : " +
+                            card['currency'] +
+                            item['amountSpent'].toString(),
                         style: TextStyle(
-                            color: Colors.white,
-                            fontFamily: "OpenSans",
-                            fontSize: 20.0,
-                            ),
+                          color: Colors.tealAccent,
+                          fontFamily: "OpenSans",
+                          fontSize: 20.0,
+                          
+                        ),
                       ),
                     ),
                   ],
@@ -89,12 +92,10 @@ class _CardDetailPageState extends State<CardDetailPage> {
   }
 
   postExpense() {
-    var expense;
+    var expensedetail;
     setState(() {
-      Navigator.of(context).pop();
-      if (int.parse(_expenseController.text) <
-          int.parse(card['availableBalance'])) {
-        expense = {
+      if (int.parse(_expenseController.text) <= expense) {
+        expensedetail = {
           "id": "",
           "title": _titleController.text,
           "content": _contentController.text,
@@ -103,10 +104,38 @@ class _CardDetailPageState extends State<CardDetailPage> {
 
         setState(() {
           //expenses.add(expense);
+
           var tempbal = int.parse(card['availableBalance']) -
               int.parse(_expenseController.text);
           expense = tempbal;
-
+          SharedPreferences.getInstance().then((prefs) {
+            Firestore.instance
+                .collection('profile')
+                .document(prefs.getString('id'))
+                .collection('Cards')
+                .document(widget.id)
+                .updateData({"availableBalance": expense.toString()});
+            Firestore.instance
+                .collection('profile')
+                .document(prefs.getString('id'))
+                .collection('Cards')
+                .document(widget.id)
+                .collection('Expenses')
+                .add({
+              "id": "",
+              "title": _titleController.text,
+              "content": _contentController.text,
+              "amountSpent": _expenseController.text
+            }).then((doc) {
+              doc.updateData({"id": doc.documentID});
+              setState(() {
+                _expenseController.text = '';
+                _contentController.text = '';
+                _titleController.text = '';
+              });
+            });
+          });
+          Navigator.of(context).pop();
         });
       } else {
         setState(() {
@@ -125,6 +154,11 @@ class _CardDetailPageState extends State<CardDetailPage> {
                     onPressed: () {
                       setState(() {
                         Navigator.of(context).pop();
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (BuildContext context) =>
+                                    CardDetailPage(widget.id)));
                       });
                     },
                   )
@@ -133,40 +167,9 @@ class _CardDetailPageState extends State<CardDetailPage> {
         });
       }
     });
-
-    SharedPreferences.getInstance().then((prefs) {
-      Firestore.instance
-          .collection('profile')
-          .document(prefs.getString('id'))
-          .collection('Cards')
-          .document(widget.id)
-          .updateData({"availableBalance": expense.toString()});
-      Firestore.instance
-          .collection('profile')
-          .document(prefs.getString('id'))
-          .collection('Cards')
-          .document(widget.id)
-          .collection('Expenses')
-          .add({
-        "id": "",
-        "title": _titleController.text,
-        "content": _contentController.text,
-        "amountSpent": _expenseController.text
-      }).then((doc) {
-        doc.updateData({"id": doc.documentID});
-        setState(() {
-          _expenseController .text ='';
-          _contentController.text='';
-           _titleController.text='';
-        });
-      });
-    });
   }
 
   getCard() {
-    setState(() {
-      isLoading = true;
-    });
     SharedPreferences.getInstance().then((prefs) {
       Firestore.instance
           .collection('profile')
@@ -209,164 +212,160 @@ class _CardDetailPageState extends State<CardDetailPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(),
-        floatingActionButton: FloatingActionButton(
-          child: Icon(Icons.note_add),
-          backgroundColor: Colors.redAccent,
-          onPressed: () {
-            setState(() {
-              showDialog(
-                  context: context,
-                  child: AlertDialog(
-                    title: Text(
-                      "Expense",
-                      style: TextStyle(fontFamily: "OpenSans"),
-                    ),
-                    content: Container(
-                      height: 300,
-                      width: 300,
-                      child: Form(
-                        key: _formKey,
-                        child: ListView(
-                          children: <Widget>[
-                            Container(
-                              padding: EdgeInsets.only(
-                                  top: 5.0, left: 5.0, right: 5.0),
-                              margin: EdgeInsets.only(top: 3.0),
-                              child: TextFormField(
-                                controller: _titleController,
-                                maxLength: 50,
-                                validator: (String value) {
-                                  if (value == '') {
-                                    return "This must  not be empty";
-                                  }
-                                },
-                                decoration: InputDecoration(
-                                  hintText: "Title",
-                                  hintStyle: TextStyle(fontFamily: "OpenSans"),
-                                ),
+      appBar: AppBar(),
+      floatingActionButton: FloatingActionButton(
+        child: Icon(Icons.note_add),
+        backgroundColor: Colors.redAccent,
+        onPressed: () {
+          setState(() {
+            showDialog(
+                context: context,
+                child: AlertDialog(
+                  title: Text(
+                    "Expense",
+                    style: TextStyle(fontFamily: "OpenSans"),
+                  ),
+                  content: Container(
+                    height: 200,
+                    width: 200,
+                    child: Form(
+                      key: _formKey,
+                      child: ListView(
+                        children: <Widget>[
+                          Container(
+                            padding: EdgeInsets.only(
+                                top: 5.0, left: 5.0, right: 5.0),
+                            margin: EdgeInsets.only(top: 3.0),
+                            child: TextFormField(
+                              controller: _titleController,
+                              maxLength: 50,
+                              validator: (String value) {
+                                if (value == '') {
+                                  return "This must  not be empty";
+                                }
+                              },
+                              decoration: InputDecoration(
+                                hintText: "Title",
+                                hintStyle: TextStyle(fontFamily: "OpenSans"),
+                              ),
+                              style: TextStyle(fontFamily: "OpenSans"),
+                            ),
+                          ),
+                          Container(
+                            padding: EdgeInsets.only(
+                                top: 5.0, left: 5.0, right: 5.0),
+                            margin: EdgeInsets.only(top: 3.0),
+                            child: TextFormField(
+                              controller: _contentController,
+                              maxLength: 100,
+                              validator: (String value) {
+                                if (value == '') {
+                                  return "This must  not be empty";
+                                }
+                              },
+                              decoration: InputDecoration(
+                                hintText: "About the Expense",
+                                hintStyle: TextStyle(fontFamily: "OpenSans"),
+                              ),
+                              style: TextStyle(fontFamily: "OpenSans"),
+                            ),
+                          ),
+                          Container(
+                            padding: EdgeInsets.only(
+                                top: 5.0, left: 5.0, right: 5.0),
+                            margin: EdgeInsets.only(top: 3.0),
+                            child: TextFormField(
+                              controller: _expenseController,
+                              maxLength: 7,
+                              validator: (String value) {
+                                if (value == '') {
+                                  return "This must  not be empty";
+                                }
+                              },
+                              decoration: InputDecoration(
+                                hintText: "Amount Spent",
+                                hintStyle: TextStyle(fontFamily: "OpenSans"),
+                              ),
+                              style: TextStyle(fontFamily: "OpenSans"),
+                            ),
+                          ),
+                          Container(
+                            alignment: Alignment.topCenter,
+                            padding: EdgeInsets.only(
+                                top: 6.0, left: 6.0, right: 6.0),
+                            margin: EdgeInsets.only(top: 6.0),
+                            child: FlatButton(
+                              child: Text(
+                                "ADD",
                                 style: TextStyle(fontFamily: "OpenSans"),
                               ),
+                              onPressed: () {
+                                if (_formKey.currentState.validate()) {
+                                  postExpense();
+                                }
+                              },
                             ),
-                            Container(
-                              padding: EdgeInsets.only(
-                                  top: 5.0, left: 5.0, right: 5.0),
-                              margin: EdgeInsets.only(top: 3.0),
-                              child: TextFormField(
-                                controller: _contentController,
-                                maxLength: 100,
-                                validator: (String value) {
-                                  if (value == '') {
-                                    return "This must  not be empty";
-                                  }
-                                },
-                                decoration: InputDecoration(
-                                  hintText: "About the Expense",
-                                  hintStyle: TextStyle(fontFamily: "OpenSans"),
-                                ),
-                                style: TextStyle(fontFamily: "OpenSans"),
-                              ),
-                            ),
-                            Container(
-                              padding: EdgeInsets.only(
-                                  top: 5.0, left: 5.0, right: 5.0),
-                              margin: EdgeInsets.only(top: 3.0),
-                              child: TextFormField(
-                                controller: _expenseController,
-                                maxLength: 7,
-                                validator: (String value) {
-                                  if (value == '') {
-                                    return "This must  not be empty";
-                                  }
-                                },
-                                decoration: InputDecoration(
-                                  hintText: "Amount Spent",
-                                  hintStyle: TextStyle(fontFamily: "OpenSans"),
-                                ),
-                                style: TextStyle(fontFamily: "OpenSans"),
-                              ),
-                            ),
-                            Container(
-                              alignment: Alignment.topCenter,
-                              padding: EdgeInsets.only(
-                                  top: 6.0, left: 6.0, right: 6.0),
-                              margin: EdgeInsets.only(top: 6.0),
-                              child: FlatButton(
-                                child: Text(
-                                  "ADD",
-                                  style: TextStyle(fontFamily: "OpenSans"),
-                                ),
-                                onPressed: () {
-                                  if (_formKey.currentState.validate()) {
-                                    postExpense();
-                                  }
-                                },
-                              ),
-                            )
-                          ],
-                        ),
+                          )
+                        ],
                       ),
                     ),
-                  ));
-            });
-          },
-        ),
-        body: Column(
-    mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Column(
-              children: <Widget>[
-
-                Container(
-                
-                    margin: EdgeInsets.only(top: 3.0,left:2.0),
-
-                  child:Card(
-                child: Column(
-                  children: <Widget>[
-                     
-                  Container(
-                     padding: EdgeInsets.only(
-                                  top: 6.0, left: 6.0, right: 6.0),
-                
-                    margin: EdgeInsets.only(top: 3.0,left:2.0),
-
-                  child:Card(
-                child: Text("Total Balance : "+ card['balance'].toString(),style: TextStyle(fontFamily: "OpenSans",fontSize: 30.0), ),
-              ) ,
-                ),
-              
-                
-                   Container(
-                     padding: EdgeInsets.only(
-                                  top: 6.0, left: 6.0, right: 6.0),
-                
-                    margin: EdgeInsets.only(top: 3.0,left:2.0),
-
-                  child:Card(
-                child: Text("Available Balance : "+ expense.toString(),style: TextStyle(fontFamily: "OpenSans",fontSize: 30.0), ),
-              ) ,
-                ),
-                    
-                  ],
-                ))),
-                
-                
-               
-                Divider
-                (color: Colors.white70
-                ,),
-                expenses.length !=0 ? expenseCard(expenses)
-                :Center(child: Text("No Expenses Found",style: TextStyle(fontFamily: "OpenSans",),))
-              
-              ],
-            )
-
-          ],
-        ),
-        
-
-
+                  ),
+                ));
+          });
+        },
+      ),
+      body: ListView(
+        shrinkWrap: true,
+        children: <Widget>[
+          Column(
+            children: <Widget>[
+              Container(
+                  margin: EdgeInsets.only(top: 3.0, left: 2.0),
+                  child: Card(
+                      child: Column(
+                    children: <Widget>[
+                      Container(
+                        padding:
+                            EdgeInsets.only(top: 6.0, left: 6.0, right: 6.0),
+                        margin: EdgeInsets.only(top: 3.0, left: 2.0),
+                        child: Card(
+                          child: Text(
+                            "Total Balance : " + card['balance'].toString(),
+                            style: TextStyle(
+                                fontFamily: "OpenSans", fontSize: 30.0),
+                          ),
+                        ),
+                      ),
+                      Container(
+                        padding:
+                            EdgeInsets.only(top: 6.0, left: 6.0, right: 6.0),
+                        margin: EdgeInsets.only(top: 3.0, left: 2.0),
+                        child: Card(
+                          child: Text(
+                            "Available Balance : " + expense.toString(),
+                            style: TextStyle(
+                                fontFamily: "OpenSans", fontSize: 30.0),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ))),
+              Divider(
+                color: Colors.white70,
+              ),
+              expenses.length != 0
+                  ? expenseCard(expenses)
+                  : Center(
+                      child: Text(
+                      "No Expenses Found",
+                      style: TextStyle(
+                        fontFamily: "OpenSans",
+                      ),
+                    ))
+            ],
+          )
+        ],
+      ),
     );
   }
 }

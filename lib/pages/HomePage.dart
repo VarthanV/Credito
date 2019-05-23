@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'CardDetail.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'login.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -26,12 +29,16 @@ class _HomePageState extends State<HomePage> {
 bool loading1=false;
   @override
   void initState() {
+    setState(() {
+      cards.clear();
+    });
     super.initState();
     getCard();
   }
 
   getCard() {
     setState(() {
+      cards.clear();
       isLoading = true;
     });
     SharedPreferences.getInstance().then((prefs) {
@@ -207,6 +214,18 @@ bool loading1=false;
       });
     });
   }
+  logout()async{
+    await FirebaseAuth.instance.signOut();
+    setState(() {
+      SharedPreferences.getInstance().then((prefs){
+        prefs.remove('cookie');
+        prefs.remove('email');
+        prefs.remove('id');
+      });
+      Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (BuildContext context ) => LoginPage()));
+    });
+
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -218,6 +237,16 @@ bool loading1=false;
             style: TextStyle(fontFamily: "Opensans"),
           ),
           centerTitle: true,
+          actions: <Widget>[
+            IconButton(
+              
+              icon: Icon(Icons.arrow_back_ios),
+              onPressed: (){
+                logout();
+
+              }
+            ,)
+          ],
         ),
         floatingActionButton: FloatingActionButton(
             backgroundColor: Colors.red,
