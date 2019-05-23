@@ -235,7 +235,7 @@ class _CardDetailPageState extends State<CardDetailPage> {
                               margin: EdgeInsets.only(top: 3.0),
                               child: TextFormField(
                                 controller: _titleController,
-                                maxLength: 10,
+                                maxLength: 50,
                                 validator: (String value) {
                                   if (value == '') {
                                     return "This must  not be empty";
