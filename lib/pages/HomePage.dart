@@ -56,6 +56,7 @@ bool loading1=false;
 
   Future refresh() async {
     setState(() {
+      cards.clear();
       getCard();
     });
   }
@@ -172,6 +173,7 @@ bool loading1=false;
   newCard() {
     SharedPreferences.getInstance().then((prefs) {
       setState(() {
+        Navigator.of(context).pop();
         loading1=true;
         email = prefs.getString('email');
         var id = prefs.getString('id');
@@ -188,6 +190,13 @@ bool loading1=false;
           setState(() {
             loading1=false;
             doc.updateData({"id": doc.documentID});
+            _cardController.text ='';
+            _currencyController.text='';
+            _balanceController.text='';
+            _dateController.text ='';
+
+
+
             Navigator.push(
                 context,
                 MaterialPageRoute(
