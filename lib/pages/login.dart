@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-
-//import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter_auth_buttons/flutter_auth_buttons.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'HomePage.dart';
@@ -20,8 +20,37 @@ class _LoginPageState extends State<LoginPage> {
   var _passwordController = new TextEditingController();
   bool isLoading = false;
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
+  final _googleSignIn= GoogleSignIn();
 @override
+Future<FirebaseUser> googleSignIn() async {
+    // Start
+    GoogleSignInAccount googleUser = await _googleSignIn.signIn();
+    GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+    final AuthCredential credential = GoogleAuthProvider.getCredential(
+      accessToken: googleAuth.accessToken,
+      idToken: googleAuth.idToken,
+    );
+    final FirebaseUser user = await _firebaseAuth.signInWithCredential(credential);
+    print("signed in " + user.displayName);
+    var prefs=await SharedPreferences.getInstance();
+    if (user.displayName != '' ){
+      SharedPreferences.getInstance().then((prefs){
+        print(prefs.getString('first'));
+        prefs.setString('cookie', user.displayName);
+        prefs.setString('email', user.email);
+        prefs.setString('name', user.displayName);
+        prefs.setString('url', user.photoUrl);
+         Navigator.pushReplacement(context,
+          MaterialPageRoute(builder: (BuildContext context) =>HomePage()));
+        
+    
 
+      });
+    }
+    
+  }
+     
+      
 
   Future<String> signIn(String email, String password) async {
     FirebaseUser user = await _firebaseAuth.signInWithEmailAndPassword(
@@ -165,7 +194,8 @@ class _LoginPageState extends State<LoginPage> {
                                   RegisterPage()));
                     },
                   ),
-                )
+                ),
+                
               ],
             ),
           )

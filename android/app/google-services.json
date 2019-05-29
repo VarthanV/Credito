@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "320217328921-m9ml2qor7opevkuvv6kmpl1cjnjt959n.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.credito",
+            "certificate_hash": "249502b5d1c22b2ed70dffaf5b3127bc9e11a0e7"
+          }
+        },
+        {
           "client_id": "320217328921-hqavp5qf5019itt0ffpng4ogsag9igb8.apps.googleusercontent.com",
           "client_type": 3
         }

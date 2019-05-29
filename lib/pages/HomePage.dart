@@ -359,7 +359,8 @@ bool loading1=false;
               });
             }),
         body: cards.length != 0
-            ? RefreshIndicator(
+            ? 
+             RefreshIndicator(
                 onRefresh: refresh,
                 child: ListView.builder(
                   itemCount: cards.length,
@@ -367,8 +368,19 @@ bool loading1=false;
                     return displayCard(cards[i]);
                   },
                 ))
-            : Center(
-                child: Text("No Cards found"),
-              ));
+            
+            : 
+            
+            RefreshIndicator(
+              onRefresh: refresh,
+              child: ListView(
+                children: <Widget>[
+                  Center(
+                    child: Text("No Cards Found"),
+                  )
+                ],
+              ),
+            )
+            );
   }
 }

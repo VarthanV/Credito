@@ -44,7 +44,7 @@ class _CardDetailPageState extends State<CardDetailPage> {
                     Container(
                       alignment: Alignment.topLeft,
                       padding: EdgeInsets.only(top: 6.0, left: 6.0, right: 6.0),
-                      margin: EdgeInsets.only(top: 6.0, left: 10.0),
+                      margin: EdgeInsets.only(top: 10.0, left: 10.0),
                       child: Text(
                         "Title :" + item['title'.toString()].toString(),
                         style: TextStyle(
