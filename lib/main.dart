@@ -4,7 +4,7 @@ import 'pages/splash.dart';
 main(List<String> args) {
   runApp(
     MaterialApp(debugShowCheckedModeBanner: false,
-    theme: ThemeData.dark(),
+    theme: ThemeData.light(),
     home: SplashScreen(),
     
     

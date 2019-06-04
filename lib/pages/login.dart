@@ -107,7 +107,7 @@ Future<FirebaseUser> googleSignIn() async {
         fit: StackFit.expand,
         children: <Widget>[
           Container(
-            decoration: BoxDecoration(color: Colors.black54),
+            decoration: BoxDecoration(color: Colors.white),
           ),
           Form(
             key: _key,

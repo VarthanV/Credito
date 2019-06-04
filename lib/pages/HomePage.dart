@@ -249,8 +249,8 @@ bool loading1=false;
           ],
         ),
         floatingActionButton: FloatingActionButton(
-            backgroundColor: Colors.red,
-            foregroundColor: Colors.black,
+            backgroundColor: Colors.blue,
+            foregroundColor: Colors.white,
             child: Icon(Icons.add),
             onPressed: () {
               setState(() {
@@ -375,7 +375,9 @@ bool loading1=false;
               onRefresh: refresh,
               child: ListView(
                 children: <Widget>[
-                  Center(
+                  Container(
+                    
+                    alignment: Alignment.center,
                     child: Text("No Cards Found"),
                   )
                 ],

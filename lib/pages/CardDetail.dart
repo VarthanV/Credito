@@ -215,7 +215,7 @@ class _CardDetailPageState extends State<CardDetailPage> {
       appBar: AppBar(),
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.note_add),
-        backgroundColor: Colors.redAccent,
+        backgroundColor: Colors.blue,
         onPressed: () {
           setState(() {
             showDialog(
