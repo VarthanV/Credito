@@ -8,6 +8,8 @@ import 'login.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends StatefulWidget {
+  bool ref;
+  HomePage(this.ref);
   @override
   _HomePageState createState() => _HomePageState();
 }
@@ -29,11 +31,18 @@ class _HomePageState extends State<HomePage> {
 bool loading1=false;
   @override
   void initState() {
-    setState(() {
-      cards.clear();
-    });
+ 
+  
     super.initState();
-    getCard();
+    if(widget.ref){
+      setState(() {
+        refresh();
+      });
+    }
+    setState(() {
+       getCard();
+    });
+   
   }
 
   getCard() {
@@ -96,7 +105,7 @@ bool loading1=false;
                         child: Text(
                           item['cardNumber'.toString()].toString(),
                           style: TextStyle(
-                              color: Colors.white,
+                              color: Colors.black,
                               fontFamily: "OpenSans",
                               fontSize: 20.0,
                               decoration: TextDecoration.underline),

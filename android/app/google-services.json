@@ -8,6 +8,35 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:320217328921:android:437457d16aa243de",
+        "android_client_info": {
+          "package_name": "com.credito.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "320217328921-hqavp5qf5019itt0ffpng4ogsag9igb8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDJU_WJqsrAtqzZBFsnOGv_VEBAve6TUlw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "320217328921-hqavp5qf5019itt0ffpng4ogsag9igb8.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:320217328921:android:76f78fe097252c3c",
         "android_client_info": {
           "package_name": "com.example.credito"

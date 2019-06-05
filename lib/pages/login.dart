@@ -41,7 +41,7 @@ Future<FirebaseUser> googleSignIn() async {
         prefs.setString('name', user.displayName);
         prefs.setString('url', user.photoUrl);
          Navigator.pushReplacement(context,
-          MaterialPageRoute(builder: (BuildContext context) =>HomePage()));
+          MaterialPageRoute(builder: (BuildContext context) =>HomePage(false)));
         
     
 
@@ -92,7 +92,7 @@ Future<FirebaseUser> googleSignIn() async {
       });
       setState(() {
         Navigator.pushReplacement(context,
-            MaterialPageRoute(builder: (BuildContext context) => HomePage()));
+            MaterialPageRoute(builder: (BuildContext context) => HomePage(false)));
       });
     }
 

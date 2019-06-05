@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'login.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
+
 class RegisterPage extends StatefulWidget {
   @override
   _RegisterPageState createState() => _RegisterPageState();
@@ -23,19 +24,20 @@ class _RegisterPageState extends State<RegisterPage> {
   var db = Firestore.instance;
 //SignUp function
   signUp(String useremail, String password, String name) async{
-    var messaging = await FirebaseMessaging();
-    var token =messaging.getToken();
+  
     try {
       _firebaseAuth
           .createUserWithEmailAndPassword(email: useremail, password: password)
           .then((user) {
         user.sendEmailVerification();
         var profile = db.collection('profile');
+       
         profile.add({
           "id":"",
           "name": _nameController.text,
           "email": _emailController.text,
-          "deviceid":token 
+         
+           
         }).then((doc) {
           doc.updateData({'id':doc.documentID});
           SharedPreferences.getInstance().then((prefs) {

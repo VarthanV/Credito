@@ -1,4 +1,4 @@
-package com.example.credito;
+package com.credito.app;
 
 import android.os.Bundle;
 import io.flutter.app.FlutterActivity;

@@ -15,12 +15,20 @@ class CardDetailPage extends StatefulWidget {
 class _CardDetailPageState extends State<CardDetailPage> {
   var expenses = [];
   int expense;
+  Future _willPopCallback() async {
+    setState(() {
+      Navigator.pushReplacement(
+          context, MaterialPageRoute(builder: (ctxt) => HomePage(true)));
+    });
+  }
 
 //Controller
   var _expenseController = new TextEditingController();
   var _formKey = new GlobalKey<FormState>();
+  var _form1Key = new GlobalKey<FormState>();
   var _titleController = new TextEditingController();
   var _contentController = new TextEditingController();
+  var _balanceController = new TextEditingController();
 
   var card = {};
   bool isLoading = false;
@@ -28,6 +36,19 @@ class _CardDetailPageState extends State<CardDetailPage> {
   void initState() {
     super.initState();
     getCard();
+  }
+
+  updatebalance() async {
+    var prefs = await SharedPreferences.getInstance();
+    Firestore.instance
+        .collection('profile')
+        .document(prefs.getString('id'))
+        .collection('Cards')
+        .document(widget.id)
+        .updateData({"balance": _balanceController.text});
+    setState(() {
+      card['balance'] = _balanceController.text;
+    });
   }
 
   Widget expenseCard(List expenses) {
@@ -48,7 +69,7 @@ class _CardDetailPageState extends State<CardDetailPage> {
                       child: Text(
                         "Title :" + item['title'.toString()].toString(),
                         style: TextStyle(
-                          color: Colors.white,
+                          color: Colors.black,
                           fontFamily: "OpenSans",
                           fontSize: 20.0,
                         ),
@@ -61,7 +82,7 @@ class _CardDetailPageState extends State<CardDetailPage> {
                       child: Text(
                         item['content'].toString(),
                         style: TextStyle(
-                          color: Colors.white,
+                          color: Colors.black,
                           fontFamily: "OpenSans",
                           fontSize: 20.0,
                         ),
@@ -76,10 +97,9 @@ class _CardDetailPageState extends State<CardDetailPage> {
                             card['currency'] +
                             item['amountSpent'].toString(),
                         style: TextStyle(
-                          color: Colors.tealAccent,
+                          color: Colors.black,
                           fontFamily: "OpenSans",
                           fontSize: 20.0,
-                          
                         ),
                       ),
                     ),
@@ -211,8 +231,12 @@ class _CardDetailPageState extends State<CardDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(),
+    return WillPopScope(
+      onWillPop: _willPopCallback,
+      child: Scaffold(
+      appBar: AppBar(
+        leading: Container(),
+      ),
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.note_add),
         backgroundColor: Colors.blue,
@@ -328,26 +352,107 @@ class _CardDetailPageState extends State<CardDetailPage> {
                         padding:
                             EdgeInsets.only(top: 6.0, left: 6.0, right: 6.0),
                         margin: EdgeInsets.only(top: 3.0, left: 2.0),
-                        child: Card(
-                          child: Text(
-                            "Total Balance : " + card['balance'].toString(),
-                            style: TextStyle(
-                                fontFamily: "OpenSans", fontSize: 30.0),
-                          ),
+                        child: Text(
+                          "Total Balance : " + card['balance'].toString(),
+                          style:
+                              TextStyle(fontFamily: "OpenSans", fontSize: 30.0),
                         ),
                       ),
                       Container(
                         padding:
                             EdgeInsets.only(top: 6.0, left: 6.0, right: 6.0),
                         margin: EdgeInsets.only(top: 3.0, left: 2.0),
-                        child: Card(
-                          child: Text(
-                            "Available Balance : " + expense.toString(),
-                            style: TextStyle(
-                                fontFamily: "OpenSans", fontSize: 30.0),
-                          ),
+                        child: Text(
+                          "Available Balance : " + expense.toString(),
+                          style:
+                              TextStyle(fontFamily: "OpenSans", fontSize: 30.0),
                         ),
                       ),
+                      Container(
+                          alignment: Alignment.topRight,
+                          padding:
+                              EdgeInsets.only(top: 6.0, left: 6.0, right: 6.0),
+                          margin: EdgeInsets.only(top: 3.0, left: 2.0),
+                          child: card['balance'] == '0' || card['balance'] == 0? FlatButton(
+                            child: Text(
+                              "UPDATE BALANCE",
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                showDialog(
+                                    context: context,
+                                    child: AlertDialog(
+                                      title: Text(
+                                        "Update Balance",
+                                        style:
+                                            TextStyle(fontFamily: "OpenSans"),
+                                      ),
+                                      content: Container(
+                                        height: 200,
+                                        width: 200,
+                                        child: Form(
+                                            key: _form1Key,
+                                            child: ListView(
+                                              shrinkWrap: true,
+                                              children: <Widget>[
+                                                Container(
+                                                  padding: EdgeInsets.only(
+                                                      top: 5.0,
+                                                      left: 5.0,
+                                                      right: 5.0),
+                                                  margin:
+                                                      EdgeInsets.only(top: 3.0),
+                                                  child: TextFormField(
+                                                    controller:
+                                                        _balanceController,
+                                                    maxLength: 7,
+                                                    validator: (String value) {
+                                                      if (value == '') {
+                                                        return "This must  not be empty";
+                                                      }
+                                                    },
+                                                    decoration: InputDecoration(
+                                                      hintText: "Balance",
+                                                      hintStyle: TextStyle(
+                                                          fontFamily:
+                                                              "OpenSans"),
+                                                    ),
+                                                    style: TextStyle(
+                                                        fontFamily: "OpenSans"),
+                                                  ),
+                                                ),
+                                                Container(
+                                                  padding: EdgeInsets.only(
+                                                      top: 5.0,
+                                                      left: 5.0,
+                                                      right: 5.0),
+                                                  margin:
+                                                      EdgeInsets.only(top: 3.0),
+                                                  child: card['totalBalance'] ==
+                                                              '0' ||
+                                                          card['totalBalance'] ==
+                                                              0
+                                                      ? RaisedButton(
+                                                          child: Text("UPDATE"),
+                                                          onPressed: () {
+                                                            if (_form1Key
+                                                                .currentState
+                                                                .validate()) {
+                                                              setState(() {
+                                                                updatebalance();
+                                                              });
+                                                            }
+                                                          },
+                                                        )
+                                                      : Container(),
+                                                )
+                                              ],
+                                            )),
+                                      ),
+                                    ));
+                              });
+                            },
+                          ):Container())
                     ],
                   ))),
               Divider(
@@ -366,6 +471,9 @@ class _CardDetailPageState extends State<CardDetailPage> {
           )
         ],
       ),
+    ) ,
     );
+    
+   
   }
 }

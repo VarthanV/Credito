@@ -19,7 +19,7 @@ var cookie=prefs.getString('cookie');
 if(cookie != null){
   setState(() {
     
-    Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context) => HomePage()));
+    Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context) => HomePage(false)));
   });
 }
 else{
